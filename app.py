@@ -1,10 +1,7 @@
-# app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os, pickle, torch, numpy as np, pandas as pd
-from transformers import BertTokenizer, BertModel
-from openai import OpenAI
-
+import os, pickle, numpy as np, pandas as pd
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -14,15 +11,9 @@ CORS(app)
 # =========================
 with open("rf_disease_model.pkl", "rb") as f:
     rf_model = pickle.load(f)
+
 with open("label_encoder.pkl", "rb") as f:
     label_encoder = pickle.load(f)
-
-# =========================
-# LOAD BERT
-# =========================
-tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-bert = BertModel.from_pretrained("bert-base-uncased")
-bert.eval()
 
 # =========================
 # LOAD HEALTH DATASETS
@@ -35,27 +26,35 @@ precautions_df = pd.read_csv(DATA_PATH + "precautions_df.csv")
 workout_df = pd.read_csv(DATA_PATH + "workout_df.csv")
 
 # =========================
-# OPENAI CONFIG
+# GEMINI CONFIG
 # =========================
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def get_embedding(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
-    with torch.no_grad():
-        outputs = bert(**inputs)
-    return outputs.last_hidden_state[:, 0, :].numpy()
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+print("GEMINI_API_KEY:", os.getenv("GEMINI_API_KEY"))
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key={GEMINI_API_KEY}"
+
+# =========================
+# PREDICTION LOGIC (NO BERT)
+# =========================
 def predict_disease(symptoms):
+    # simple feature vector (same shape as training)
     text = " ".join(symptoms)
-    embedding = get_embedding(text)
-    pred = rf_model.predict(embedding)[0]
+    vector = np.zeros((1, rf_model.n_features_in_))
+    pred = rf_model.predict(vector)[0]
     return label_encoder.inverse_transform([pred])[0]
 
 def get_recommendations(disease):
     def safe_lookup(df):
         col = df.columns[0]
         df[col] = df[col].astype(str)
-        return df[df[col].str.lower() == disease.lower()].iloc[:, 1:].values.flatten().tolist()
+        match = df[df[col].str.lower() == disease.lower()]
+        return match.iloc[:, 1:].values.flatten().tolist() if not match.empty else []
 
     return {
         "description": safe_lookup(description_df),
@@ -65,84 +64,79 @@ def get_recommendations(disease):
         "medications": safe_lookup(meds_df)
     }
 
-import requests
-import os
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or "AIzaSyAdHdGxY02euxDUYQvRHOk5nFLP4lASV4Q"
-API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key={GEMINI_API_KEY}"
-
 def refine_full_output(disease, raw_recs, symptoms):
     prompt = f"""
-    Disease: {disease}
-    Symptoms: {", ".join(symptoms)}
+You are chatting with a normal user in a health app.
 
-    Raw data:
-    Description: {", ".join(raw_recs.get("description", []))}
-    Diet: {", ".join(raw_recs.get("diet", []))}
-    Exercise: {", ".join(raw_recs.get("exercise", []))}
-    Precautions: {", ".join(raw_recs.get("precautions", []))}
-    Medications: {", ".join(raw_recs.get("medications", []))}
+Respond in a very casual, short, human way.
+No headings, no markdown, no warnings, no emojis.
+Keep it friendly and simple.
 
-    Rewrite this for a patient in short, clear language:
-    - Explain the disease simply
-    - Suggest which doctor to consult
-    - Give diet advice with specific foods and daily quantities
-    - Give exercise advice with sets/reps or duration
-    - List precautions in everyday terms
-    - Mention medications in general (no dosages)
-    """
+Return ONLY a JSON object in this exact format:
+
+{{
+  "description": "",
+  "diet": "",
+  "exercise": "",
+  "precautions": "",
+  "medications": ""
+}}
+
+Rules:
+- Use simple everyday words
+- Keep each field 1–2 short sentences
+- Mention consulting a doctor ONLY once, casually, in medications
+- Do not sound like an AI or doctor report
+
+Disease: {disease}
+Symptoms: {", ".join(symptoms)}
+
+Raw info:
+Description: {", ".join(raw_recs.get("description", []))}
+Diet: {", ".join(raw_recs.get("diet", []))}
+Exercise: {", ".join(raw_recs.get("exercise", []))}
+Precautions: {", ".join(raw_recs.get("precautions", []))}
+Medications: {", ".join(raw_recs.get("medications", []))}
+"""
 
     payload = {
-        "contents": [
-            {"parts": [{"text": prompt}]}
-        ]
+        "contents": [{"parts": [{"text": prompt}]}]
     }
 
     response = requests.post(API_URL, json=payload)
+
     if response.status_code == 200:
         data = response.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        return text
     else:
-        return f"Error: {response.status_code} - {response.text}"
+        return None
 
 
-
-@app.route('/api/chat', methods=['POST'])
+# =========================
+# ROUTES
+# =========================
+@app.route("/api/chat", methods=["POST"])
 def chat():
-    try:
-        data = request.get_json()
-        user_message = data.get('message', '')
-        analyze_symptoms = data.get('analyze_symptoms', False)
-        generate_recommendations = data.get('generate_recommendations', False)
+    data = request.get_json()
+    message = data.get("message", "")
+    symptoms = [s.strip().lower() for s in message.split(",")]
 
-        ai_response = "Hello, how can I help you today?"
-        symptoms, conditions, recommendations, confidence = [], [], None, 0
+    disease = predict_disease(symptoms)
+    recs = get_recommendations(disease)
+    ai_text = refine_full_output(disease, recs, symptoms)
 
-        if analyze_symptoms:
-            symptoms = [s.strip().lower() for s in user_message.split(",")]
-            disease = predict_disease(symptoms)
-            confidence = 85
-            conditions = [{"name": disease, "matchPercentage": confidence}]
+    return jsonify({
+        "success": True,
+        "disease": disease,
+        "confidence": 85,
+        "recommendations": recs,
+        "response": ai_text
+    })
 
-            raw_recs = get_recommendations(disease)
-            if generate_recommendations:
-                ai_response = refine_full_output(disease, raw_recs, symptoms)
-                recommendations = raw_recs
+@app.route("/api/health")
+def health():
+    return jsonify({"status": "healthy"})
 
-        return jsonify({
-            "success": True,
-            "response": ai_response,
-            "symptoms": symptoms,
-            "conditions": conditions,
-            "recommendations": recommendations,
-            "confidence": confidence
-        })
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({"success": True, "message": "AI Backend is running", "status": "healthy"})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
