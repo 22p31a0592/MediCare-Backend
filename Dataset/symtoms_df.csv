@@ -16,7 +16,7 @@
 14,Allergy, continuous_sneezing, shivering, chills,
 15,Allergy, shivering, chills, watering_from_eyes,
 16,Allergy, continuous_sneezing, chills, watering_from_eyes,
-17,Allergy, continuous_sneezing, shivering, watering_from_eyes,
+17,Allergy, continuous_sneezing, shivering, watering_from_eyes, 
 18,Allergy, continuous_sneezing, shivering, chills,
 19,Allergy, continuous_sneezing, shivering, chills, watering_from_eyes
 20,GERD, stomach_pain, acidity, ulcers_on_tongue, vomiting
