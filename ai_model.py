@@ -1,6 +1,10 @@
 import pandas as pd
 
 def get_ai_diet_exercise(disease, symptoms):
+
+    if disease is None:
+        return {"diet": "No specific diet found", "exercise": "No specific exercise found"}
+
     diet_df= pd.read_csv("Dataset/diets.csv")
 
     excercise_df = pd.read_csv("Dataset/Exercise.csv")
@@ -13,6 +17,10 @@ def get_ai_diet_exercise(disease, symptoms):
     return {"diet": "No specific diet found", "exercise": "No specific exercise found"}
 
 def get_precautions(disease):
+
+    if disease is None:
+        return ["No specific precautions found"]
+    
     precautions_df = pd.read_csv("Dataset/precautions_df.csv")
     match = precautions_df[precautions_df["Disease"].str.lower() == disease.lower()]
     if not match.empty:
