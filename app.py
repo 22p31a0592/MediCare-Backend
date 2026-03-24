@@ -20,22 +20,25 @@ with open("vectorizer.pkl", "rb") as f:
 # Load medications dataset
 meds_df = pd.read_csv("Dataset/medications.csv")  # columns: Disease, Medication
 
-# =========================
-# PREDICTION LOGIC
-# =========================
-def predict_disease(symptoms):
+
+def predict_disease(symptoms, threshold=0.5):
     text = " ".join(symptoms)
     X = vectorizer.transform([text])
-    pred = rf_model.predict(X)[0]
+    probs = rf_model.predict_proba(X)[0]
+    max_prob = probs.max()
+    pred = rf_model.classes_[probs.argmax()]
+    
+    if max_prob < threshold:
+        return None  # return null if confidence too low
     return label_encoder.inverse_transform([pred])[0]
 
 def get_medications(disease):
+    if disease is None:
+        return []
     match = meds_df[meds_df["Disease"].str.lower() == disease.lower()]
     return match["Medication"].tolist() if not match.empty else []
 
-# =========================
-# ROUTES
-# =========================
+
 @app.route("/api/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -46,6 +49,17 @@ def chat():
     medications = get_medications(disease)
     ai_suggestions = get_ai_diet_exercise(disease, symptoms)
     pricaution = get_precautions(disease)
+
+    if disease is None:
+        return jsonify({
+            "success": False,
+            "disease": None,
+            "confidence": 0,
+            "medications": [],
+            "ai_suggestions": [],
+            "precautions": []
+     })
+
 
     return jsonify({
         "success": True,
