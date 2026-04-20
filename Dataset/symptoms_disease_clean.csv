@@ -1,0 +1,179 @@
+Disease,Symptoms
+common cold,fever
+common cold,cough
+migraine,headache
+migraine,fatigue
+asthma,shortness of breath
+gastroenteritis,nausea
+gastroenteritis,vomiting
+strep throat,sore throat
+arthritis,joint pain
+arthritis,fatigue
+hypertension,chest pain
+hypertension,dizziness
+allergic reaction,itching
+allergic reaction,redness
+indigestion,abdominal pain
+indigestion,bloating
+major depressive,fatigue
+major depressive,sadness
+influenza,fever
+influenza,muscle aches
+common cold,cough
+common cold,sneezing
+motion sickness,nausea
+motion sickness,dizziness
+chronic bronchitis,shortness of breath
+migraine,headache
+migraine,blurred vision
+gastritis,stomach pain
+gastritis,diarrhea
+rheumatoid arthritis,joint pain
+rheumatoid arthritis,swelling
+tonsillitis,fever
+tonsillitis,sore throat
+sciatica,back pain
+sciatica,numbness
+morning sickness,nausea
+morning sickness,vomiting
+iron deficiency,fatigue
+iron deficiency,weakness
+panic disorder,anxiety
+panic disorder,rapid heartbeat
+sleep apnea,shortness of breath
+dermatitis,skin rash
+dermatitis,itching
+respiratory infection,cough
+respiratory infection,fever
+heat exhaustion,dizziness
+heat exhaustion,fatigue
+tension headache,headache
+tension headache,sensitivity
+indigestion,abdominal pain
+indigestion,bloating o
+menstrual cramps,nausea
+menstrual cramps,cramps
+coronary arterydisease,chest pain
+coronary arterydisease,shortness of breath
+thyroid disorder,fatigue
+thyroid disorder,difficulty breathing
+pneumonia,fever
+pneumonia,chills
+covid-19,cough
+covid-19,shortness of breath
+muscle strain,muscle pain
+muscle strain,fatigue
+vision fatigue,headache
+vision fatigue,blurred vision
+gastroenteritis,stomach pain
+gastroenteritis,diarrhea
+herniated disc,back pain
+herniated disc,numbness
+chronic fatigue syndrome,fatigue
+chronic fatigue syndrome,weakness
+anxiety disorder,anxiety
+anxiety disorder,palpitations
+muscle overuse,chest pain
+muscle overuse,shortness of breath
+arthritis,joint pain
+arthritis,swelling
+s  arthritis,joint pain
+s  arthritis,fatigue
+major depressive disorder,fatigue
+major depressive disorder,sadness
+covid-19,cough
+covid-19,shortness of breat
+allergic reacti,itching
+allergic reacti,redness
+muscle overuse,chest pain
+muscle overuse,shortness
+chronic fatigue,fatigue
+chronic fatigue,weakness
+arthritis,joint pain
+arthritis,swelling
+panic disorder,anxiety
+panic disorder,rapid heartbeat
+dermatitis,skin rash
+dermatitis,itching
+respiratoryinfection,cough
+respiratoryinfection,fever
+coronary artery,chest pain
+coronary artery,shortness of breath
+covid-19,cough
+covid-19,shortness of brea
+allergic reaction,e itching
+allergic reaction,redness
+gastroenteritis,nausea
+gastroenteritis,vomiting
+herniated disc,back pain
+herniated disc,numbness
+chronic fatigue syndrome,fatigue
+chronic fatigue syndrome,weakness
+anxiety disorder,anxiety
+anxiety disorder,palpitations
+is  arthritis,e joint pain
+is  arthritis,swelling
+chronic fatigue,e fatigue
+chronic fatigue,weakness
+covid-19,e cough
+covid-19,shortness of brea
+gastroenteritis,e nausea
+gastroenteritis,vomiting
+herniated disc,e back pain
+herniated disc,numbness
+anxiety disorder,e anxiety
+anxiety disorder,palpitations
+arthritis,e joint pain
+arthritis,swelling
+chronic fatigue syndrome,e fatigue
+chronic fatigue syndrome,weakness
+strep throat,sore throat
+strep throat,cough
+respiratory infection,cough
+respiratory infection,fever
+coronary artery disease,chest pain
+coronary artery disease,shortness of breath
+respiratory,cough
+respiratory,fever
+coronary artery,chest pain
+coronary artery,shortness
+disease,of breath
+thyroid disorder,fatigue
+thyroid disorder,difficulty
+strep throat,sore throat
+strep throat,cough
+iron deficiency,fatigue
+iron deficiency,weakness
+panic disorder,anxiety
+panic disorder,rapid heartbeat
+sleep apnea,shortness of breath
+dermatitis,skin rash
+dermatitis,itching
+respiratory     antiinfection,cough
+respiratory     antiinfection,fever
+arthritis,joint pain
+arthritis,fatigue
+heat exhaustion hydr,dizziness
+heat exhaustion hydr,fatigue
+tension headache rel,headache
+tension headache rel,sensitivity
+indigestion     anta,abdominal pain
+indigestion     anta,bloating
+menstrual cramps pai,nausea
+menstrual cramps pai,cramps
+coronary artery disease,chest pain
+coronary artery disease,shortnessof breath
+disease,fatigue
+disease,difficulty breathing
+pheumonia,fever
+pheumonia,chills
+covid-19,cough
+covid-19,shortness of breath
+allergic reaction an,itching
+allergic reaction an,redness
+muscle strain,muscle pain
+muscle strain,fatigue
+muscle strain,nausea
+muscle strain,vomiting
+muscle strain,headache
+muscle strain,blurred vision

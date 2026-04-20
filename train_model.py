@@ -1,6 +1,9 @@
+
 # train_model.py
+
 import pickle
 import pandas as pd
+import random
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -8,46 +11,108 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 
 # =========================
-# LOAD DATA
+# STEP 1: LOAD RAW DATA
 # =========================
-df = pd.read_csv("Dataset/symtoms_df.csv")  
-# Columns: Disease, Symptom_1, Symptom_2, Symptom_3, Symptom_4
+df = pd.read_csv("Dataset/symptoms_disease.csv")
 
-# Combine symptom columns into one text field
-symptom_cols = [col for col in df.columns if col.startswith("Symptom")]
-df["symptom_text"] = df[symptom_cols].fillna("").apply(lambda row: " ".join(row.values.astype(str)), axis=1)
+# Ensure proper column names
+df.columns = ["Disease", "Symptoms"]
 
-# Encode disease labels
+# Clean text
+df["Disease"] = df["Disease"].str.strip().str.lower()
+df["Symptoms"] = df["Symptoms"].str.strip().str.lower()
+
+# =========================
+# STEP 2: GROUP SYMPTOMS
+# =========================
+grouped = df.groupby("Disease")["Symptoms"].apply(list)
+
+# =========================
+# STEP 3: GENERATE TRAINING DATA (VERY IMPORTANT)
+# =========================
+rows = []
+
+for disease, symptoms in grouped.items():
+    symptoms = [str(s).strip().lower() for s in symptoms if pd.notna(s)]
+
+    symptoms = list(set(symptoms))  # remove duplicates
+
+
+    if len(symptoms) < 2:
+        continue
+
+
+    for _ in range(15):  # increase for better accuracy
+        sample_size = random.randint(2, min(5, len(symptoms)))
+        sample = random.sample(symptoms, sample_size)
+
+        rows.append({
+            "Disease": disease,
+            "symptom_text": " ".join(sample)
+        })
+
+
+df_expanded = pd.DataFrame(rows)
+
+print("\nGenerated dataset size:", df_expanded.shape)
+
+# =========================
+# STEP 4: ENCODE LABELS
+# =========================
 label_encoder = LabelEncoder()
-labels = label_encoder.fit_transform(df["Disease"])
+y = label_encoder.fit_transform(df_expanded["Disease"])
 
-# Convert symptoms text into TF-IDF features
-vectorizer = TfidfVectorizer(max_features=5000)
-X = vectorizer.fit_transform(df["symptom_text"])
-
-# Train/test split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, labels, test_size=0.2, stratify=labels, random_state=42
+# =========================
+# STEP 5: TF-IDF VECTORIZATION
+# =========================
+vectorizer = TfidfVectorizer(
+    max_features=5000,
+    ngram_range=(1, 2)  # 🔥 improves accuracy
 )
 
-# Train Random Forest
+X = vectorizer.fit_transform(df_expanded["symptom_text"])
+
+# =========================
+# STEP 6: TRAIN-TEST SPLIT
+# =========================
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42
+)
+
+# =========================
+# STEP 7: TRAIN MODEL
+# =========================
 model = RandomForestClassifier(
     n_estimators=300,
-    max_depth=20,
-    min_samples_leaf=3,
+    max_depth=25,
+    min_samples_leaf=2,
     random_state=42,
     n_jobs=-1
 )
+
 model.fit(X_train, y_train)
 
-print("Accuracy:", accuracy_score(y_test, model.predict(X_test)))
+# =========================
+# STEP 8: EVALUATION
+# =========================
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
 
-# Save model, encoder, and vectorizer
+print("\nModel Accuracy:", round(accuracy * 100, 2), "%")
+
+# =========================
+# STEP 9: SAVE MODEL
+# =========================
 with open("rf_disease_model.pkl", "wb") as f:
     pickle.dump(model, f)
+
 with open("label_encoder.pkl", "wb") as f:
     pickle.dump(label_encoder, f)
+
 with open("vectorizer.pkl", "wb") as f:
     pickle.dump(vectorizer, f)
 
-print("Model, encoder, and vectorizer saved successfully!")
+print("\nModel, encoder, and vectorizer saved successfully!")
+

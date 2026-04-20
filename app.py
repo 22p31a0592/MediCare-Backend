@@ -18,66 +18,72 @@ with open("vectorizer.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
 # Load medications dataset
-meds_df = pd.read_csv("Dataset/medications.csv")  # columns: Disease, Medication
+meds_df = pd.read_csv("Dataset/disease_medicine.csv")  # columns: Disease, Medicine
 
-# Load known symptoms from training data for normalization reference
-symptoms_df = pd.read_csv("Dataset/symtoms_df.csv")
-symptom_cols = [col for col in symptoms_df.columns if col.startswith("Symptom")]
+# Load cleaned symptoms dataset
+symptoms_df = pd.read_csv("Dataset/symptoms_disease_clean.csv")
+
 KNOWN_SYMPTOMS = set(
-    symptoms_df[symptom_cols]
-    .fillna("")
-    .values.flatten()
+    symptoms_df["Symptoms"]
+    .dropna()
+    .str.strip()
+    .str.lower()
     .tolist()
 )
-KNOWN_SYMPTOMS.discard("")
-KNOWN_SYMPTOMS_STR = ", ".join(sorted(KNOWN_SYMPTOMS))
 
 # =========================
-# CLAUDE AI SYMPTOM NORMALIZER
+# HELPERS
 # =========================
-
-
-def normalize_symptoms_with_claude(user_symptoms: list[str]) -> list[str]:
-    """
-    Local symptom matching without Claude
-    """
+def normalize_symptoms(user_symptoms: list[str]) -> list[str]:
     normalized = []
-
     for symptom in user_symptoms:
-        match = get_close_matches(symptom, KNOWN_SYMPTOMS, n=1, cutoff=0.6)
-        if match:
-            normalized.append(match[0])
-    
-    return normalized if normalized else user_symptoms
+        symptom = symptom.strip().lower()
+        parts = symptom.split(",")
+        for part in parts:
+            part = part.strip()
+            if part in KNOWN_SYMPTOMS:
+                normalized.append(part)
+            else:
+                match = get_close_matches(part, KNOWN_SYMPTOMS, n=1, cutoff=0.4)
+                if match:
+                    normalized.append(match[0])
+                else:
+                    normalized.append(part)
+    return list(set(normalized))  # remove duplicates
 
-def predict_disease(symptoms, threshold=0.5):
+def predict_disease(symptoms, threshold=0.2):
     text = " ".join(symptoms)
     X = vectorizer.transform([text])
     probs = rf_model.predict_proba(X)[0]
     max_prob = probs.max()
-    pred = rf_model.classes_[probs.argmax()]
+    pred_idx = probs.argmax()
 
     if max_prob < threshold:
         return None, round(float(max_prob) * 100, 2)
-    return label_encoder.inverse_transform([pred])[0], round(float(max_prob) * 100, 2)
+
+    disease = label_encoder.inverse_transform([pred_idx])[0]
+    return disease, round(float(max_prob) * 100, 2)
 
 def get_medications(disease):
     if disease is None:
         return []
-    match = meds_df[meds_df["Disease"].str.lower() == disease.lower()]
-    return match["Medication"].tolist() if not match.empty else []
+    all_diseases = meds_df["Disease"].str.lower().unique()
+    match = get_close_matches(disease, all_diseases, n=1, cutoff=0.6)
+    if match:
+        disease = match[0]
+    result = meds_df[meds_df["Disease"].str.lower() == disease]
+    return result["Medicine"].tolist() if not result.empty else []
 
-
+# =========================
+# ROUTES
+# =========================
 @app.route("/api/chat", methods=["POST"])
 def chat():
     data = request.get_json()
     message = data.get("message", "")
     raw_symptoms = [s.strip().lower() for s in message.split(",")]
 
-    # Step 1: Normalize symptoms via Claude AI
-    normalized_symptoms = normalize_symptoms_with_claude(raw_symptoms)
-
-    # Step 2: Predict disease using normalized symptoms
+    normalized_symptoms = normalize_symptoms(raw_symptoms)
     disease, confidence = predict_disease(normalized_symptoms)
     medications = get_medications(disease)
     ai_suggestions = get_ai_diet_exercise(disease, normalized_symptoms)
@@ -108,27 +114,44 @@ def chat():
 def health():
     return jsonify({"status": "healthy"})
 
-# =========================
-# CLI MODE FOR CMD TESTING
-# =========================
-if __name__ == "__main__":
-    text = input("Enter symptoms (comma separated): ")
-    raw_symptoms = [s.strip().lower() for s in text.split(",")]
+@app.route("/api/predict-by-disease", methods=["POST"])
+def predict_by_disease():
+    data = request.get_json()
+    disease = data.get("disease", "").strip().lower()
 
-    print("\nNormalizing symptoms ...")
-    normalized_symptoms = normalize_symptoms_with_claude(raw_symptoms)
-    print("Normalized symptoms:", normalized_symptoms)
+    if not disease:
+        return jsonify({"success": False, "message": "No disease provided"})
 
-    disease, confidence = predict_disease(normalized_symptoms)
     medications = get_medications(disease)
-    ai_suggestions = get_ai_diet_exercise(disease, normalized_symptoms)
+    ai_suggestions = get_ai_diet_exercise(disease, [])
     precaution = get_precautions(disease)
 
-    print("\n=== RESULT ===")
-    print("Predicted Disease:", disease)
-    print("Confidence:", confidence, "%")
-    print("Medications:", medications)
-    print("AI Suggestions (Diet & Exercise):", ai_suggestions)
-    print("Precautions:", precaution)
+    return jsonify({
+        "success": bool(medications),
+        "disease": disease,
+        "medications": medications,
+        "ai_suggestions": ai_suggestions,
+        "precautions": precaution
+    })
 
+# =========================
+# MAIN
+# =========================
+if __name__ == "__main__":
+   
+    while True:
+        text = input("\nEnter symptoms (comma separated): ")
+
+        raw_symptoms = [s.strip().lower() for s in text.split(",")]
+        normalized = normalize_symptoms(raw_symptoms)
+
+        print("Normalized:", normalized)
+
+        disease, confidence = predict_disease(normalized)
+        meds = get_medications(disease)
+
+        print("Disease:", disease)
+        print("Confidence:", confidence)
+        print("Medicines:", meds)
+    
     app.run(host="0.0.0.0", port=5000)

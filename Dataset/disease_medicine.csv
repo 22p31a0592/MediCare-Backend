@@ -1,0 +1,87 @@
+Disease,Medicine
+Common Cold,"Ibuprofen, Rest"
+Migraine,Sumatriptan
+Asthma,Albuterol Inhaler
+Gastroenteritis,Oral Rehydration
+Strep Throat,Penicillin
+Arthritis,NSAIDs
+Hypertension,Amlodipine
+Allergic Reaction,Antihistamine
+Indigestion,Antacids
+Major Depressive,Sertraline
+
+Influenza,Acetaminophen
+Common Cold,"Honey, Rest"
+Motion Sickness,Dimenhydrinate
+Chronic Bronchitis,Inhalers
+Migraine,Beta-blockers
+Gastritis,"Antacids, Rest"
+Rheumatoid Arthritis,NSAIDs
+Tonsillitis,"Fluids, Rest"
+Sciatica,Pain Relievers
+Morning Sickness,"Ginger, Vitamin B6"
+Iron Deficiency,Iron Supplements
+Panic Disorder,Cognitive Therapy
+Sleep Apnea,CPAP Machine
+Dermatitis,Topical Steroids
+Respiratory infection,"Antivirals, Rest"
+Arthritis,Pain Relievers
+Heat Exhaustion,"Hydration, Rest"
+Tension Headache,"Relaxation, NSAIDs"
+Menstrual Cramps,Pain Relievers
+Coronary ArteryDisease,Nitroglycerin
+Thyroid Disorder,Levothyroxine
+Pneumonia,"Antibiotics, Rest"
+COVID-19,"Isolation, Fluids"
+Muscle Strain,"Rest, Pain Relievers"
+Vision Fatigue,"Rest, Eye Exercises"
+Gastroenteritis,"Fluids, Bland Diet"
+Herniated Disc,"Pain Relievers, PT"
+Chronic Fatigue Syndrome,"Rest, Lifestyle"
+Anxiety Disorder,"Therapy, Medication"
+Muscle Overuse,"Rest, Stretching"
+s  Arthritis,NSAIDs
+Major Depressive Disorder, Sertraline
+Allergic Reacti,on   Antihistamine
+Anxiety Disorder," Therapy, Medication"
+Chronic Fatigue,"Rest, Lifestyle"
+Syndrome,
+ Arthritis,NSAIDs
+RespiratoryInfection,"Antivirals, Rest"
+Heat Exhaustion," Hydration, Rest"
+Menstrual Cramps, Pain Relievers
+Coronary Artery,"  Nitroglycerin,Aspirin"
+Thyroid Disorder,  Levothyroxine
+Allergic Reaction, Antihistamine
+Gastroenteritis,  Oral Rehydration
+Gastroenteritis,"  Fluids, Bland Diet"
+Chronic Fatigue Syndrome,"  Rest, Lifestyle"
+is  Arthritis,NSAIDs
+Motion Sickness, Dimenhydrinate
+Chronic Fatigue Syndrome," Rest, Lifestyle"
+Respiratory Infection,"Antivirals, Rest"
+Coronary Artery Disease,"Nitroglycerin,Aspirin"
+Respiratory,"Antivirals, Rest"
+Infection,
+Coronary Artery,Nitroglycerin
+Disease,Aspirin
+Strep Throat     ,Penicillin
+Iron Deficiency ,Iron Supplements
+Panic Disorder  ,Cognitive Therapy
+Sleep Apnea     ,CPAP Machine
+Dermatitis      ,Topical Steroids
+Respiratory     AntiInfection,"virals, Rest"
+Arthritis     ,  NSAIDs
+Heat Exhaustion Hydr,"ation, Rest"
+Tension Headache Rel,"axation, NSAIDs"
+Indigestion     Anta,cids
+Menstrual Cramps Pai,n Relievers
+Coronary Artery Disease   ,"Nitroglycerin,Aspirin"
+      ,
+Disease         , Levothyroxine
+Pheumonia      ," Antibiotics, Rest"
+COVID-19      ,"  Isolation, Fluids"
+Allergic Reaction An,tihistamine
+Muscle Strain  ," Rest, Pain Relievers"
+Muscle Strain  ,Rehydration
+Muscle Strain  ,Eye Exercises
